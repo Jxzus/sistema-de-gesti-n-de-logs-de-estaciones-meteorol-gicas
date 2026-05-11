@@ -1,1 +1,0 @@
-# sistema-de-gesti-n-de-logs-de-estaciones-meteorol-gicas

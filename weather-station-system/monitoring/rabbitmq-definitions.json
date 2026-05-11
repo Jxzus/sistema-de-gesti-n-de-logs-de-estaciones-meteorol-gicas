@@ -1,0 +1,110 @@
+{
+  "rabbit_version": "3.13",
+  "rabbitmq_version": "3.13",
+  "product_name": "RabbitMQ",
+  "users": [
+    {
+      "name": "admin",
+      "password_hash": "ZGVmYXVsdA==",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"],
+      "limits": {}
+    },
+    {
+      "name": "monitor",
+      "password_hash": "bW9uaXRvcg==",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["monitoring"],
+      "limits": {}
+    }
+  ],
+  "vhosts": [
+    { "name": "/" }
+  ],
+  "permissions": [
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "monitor",
+      "vhost": "/",
+      "configure": "",
+      "write": "",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "weather.exchange",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "weather.exchange.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "weather.readings.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "weather.exchange.dlx",
+        "x-message-ttl": 86400000
+      }
+    },
+    {
+      "name": "weather.readings.queue.dead",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "weather.exchange",
+      "vhost": "/",
+      "destination": "weather.readings.queue",
+      "destination_type": "queue",
+      "routing_key": "weather.readings",
+      "arguments": {}
+    },
+    {
+      "source": "weather.exchange.dlx",
+      "vhost": "/",
+      "destination": "weather.readings.queue.dead",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    }
+  ],
+  "policies": [
+    {
+      "vhost": "/",
+      "name": "weather-ha-policy",
+      "pattern": "weather.*",
+      "apply-to": "queues",
+      "definition": {
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic"
+      },
+      "priority": 0
+    }
+  ]
+}
